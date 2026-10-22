@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="RestauraFoto: restaure fotos antigas de família removendo riscos, granulação, amarelado e desbotamento com visão computacional." />
+    <title>RestauraFoto · Restauração de fotos antigas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f6c77a" />
+              <stop offset="1" stop-color="#d9773b" />
+            </linearGradient>
+          </defs>
+          <rect x="3" y="6" width="26" height="20" rx="4" fill="none" stroke="url(#lg)" stroke-width="2" />
+          <circle cx="16" cy="16" r="5.5" fill="none" stroke="url(#lg)" stroke-width="2" />
+          <circle cx="16" cy="16" r="2" fill="url(#lg)" />
+          <rect x="21.5" y="9" width="4" height="2" rx="1" fill="url(#lg)" />
+        </svg>
+        <div>
+          <h1>RestauraFoto</h1>
+          <p class="tagline">Memórias de família, de volta à vida</p>
+        </div>
+      </div>
+
+      <div class="file-chip" id="file-chip" hidden>
+        <span class="dot"></span>
+        <span id="file-name">—</span>
+        <span class="muted" id="file-dims"></span>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btn-abrir" title="Abrir foto (Ctrl+O)">
+          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+          Abrir foto
+        </button>
+        <button class="btn primary" id="btn-salvar" title="Salvar cópia restaurada (Ctrl+S)" disabled>
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14" /></svg>
+          Salvar cópia
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="stage" aria-label="Visualização">
+        <nav class="tabs" id="tabs" role="tablist" aria-label="Modo de visualização">
+          <button role="tab" class="tab active" data-modo="comparar" id="tab-comparar">Comparar</button>
+          <button role="tab" class="tab" data-modo="lado" id="tab-lado">Lado a lado</button>
+          <button role="tab" class="tab" data-modo="diferenca" id="tab-diferenca">Diferença</button>
+          <button role="tab" class="tab" data-modo="mascara" id="tab-mascara">Máscara de riscos</button>
+          <span class="tab-indicator" id="tab-indicator"></span>
+        </nav>
+
+        <div class="viewer" id="viewer">
+          <button class="dropzone" id="dropzone" type="button">
+            <div class="dz-icon">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <rect x="6" y="10" width="36" height="28" rx="4" />
+                <path d="m6 32 10-10 8 8 6-6 12 12" />
+                <circle cx="33" cy="19" r="3" />
+              </svg>
+            </div>
+            <h2>Arraste uma foto antiga para cá</h2>
+            <p>ou clique para escolher · JPG, PNG, TIFF, BMP, WEBP</p>
+          </button>
+
+          <div class="view view-comparar" id="view-comparar" hidden>
+            <div class="compare" id="compare">
+              <img id="cmp-original" alt="Foto original" draggable="false" />
+              <img id="cmp-restaurada" class="cmp-top" alt="Foto restaurada" draggable="false" />
+              <span class="badge left">Original</span>
+              <span class="badge right">Restaurada</span>
+              <div class="handle" id="handle" role="slider" aria-label="Divisor antes/depois" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                <span class="knob">
+                  <svg viewBox="0 0 24 24"><path d="m9 6-6 6 6 6M15 6l6 6-6 6" /></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="view view-lado" id="view-lado" hidden>
+            <figure><img id="lado-original" alt="Original" /><figcaption>Original</figcaption></figure>
+            <figure><img id="lado-restaurada" alt="Restaurada" /><figcaption>Restaurada</figcaption></figure>
+          </div>
+
+          <div class="view view-single" id="view-diferenca" hidden>
+            <figure><img id="img-diferenca" alt="Diferença" /><figcaption>|original − restaurada| × 3</figcaption></figure>
+          </div>
+
+          <div class="view view-single" id="view-mascara" hidden>
+            <figure><img id="img-mascara" alt="Máscara de riscos" /><figcaption id="cap-mascara">Máscara usada pelo inpaint</figcaption></figure>
+          </div>
+
+          <div class="loader" id="loader" hidden>
+            <div class="spinner"></div>
+            <span id="loader-text">Restaurando…</span>
+          </div>
+        </div>
+
+        <footer class="statusbar">
+          <span id="status">Nenhuma foto carregada</span>
+          <span class="muted" id="status-extra"></span>
+        </footer>
+      </section>
+
+      <aside class="panel" aria-label="Ajustes de restauração">
+        <div class="panel-head">
+          <h2>Restauração</h2>
+          <button class="btn tiny ghost" id="btn-reset" disabled>Restaurar padrão</button>
+        </div>
+        <div id="etapas" class="etapas"></div>
+
+        <section class="card hist">
+          <div class="card-head">
+            <h3>Histograma</h3>
+            <div class="legend">
+              <span><i class="sw dashed"></i>Original</span>
+              <span><i class="sw solid"></i>Restaurada</span>
+            </div>
+          </div>
+          <canvas id="hist" width="600" height="180"></canvas>
+        </section>
+      </aside>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
