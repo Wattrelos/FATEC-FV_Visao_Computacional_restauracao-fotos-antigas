@@ -30,3 +30,6 @@ __pycache__/
 # Rust
 src-tauri/target/
 src-tauri/gen/
+
+# Test results e diagnósticos
+test-results/

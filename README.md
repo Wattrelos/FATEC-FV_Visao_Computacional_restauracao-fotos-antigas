@@ -59,3 +59,71 @@ O software deverá contemplar (no mínimo) as seguintes técnicas e funcionalida
 
 ### 🔹 Aplicações avançadas
 - Reconhecimento facial, com base no código apresentado por Antonello ou em outras abordagens de visão computaciona
+
+
+Ran command: `cat src-tauri/tauri.conf.json`
+Ran command: `echo $PATH`
+Ran command: `grep -i nvm ~/.bashrc`
+Ran command: `export PATH="/home/sickla/.nvm/versions/node/v24.22.0/bin:${PATH}"; npm run tauri -- --help`
+
+# Para executar o **RestauraFoto**
+O fluxo varia conforme o objetivo (app desktop completo, apenas o motor Python ou build final):
+
+---
+
+### 🖥️ 1. Executar o App Desktop Completo (Recomendado)
+
+O Tauri orquestra o frontend (Vite/TypeScript) e o backend nativo (Rust + Python/PyO3) simultaneamente. 
+
+No diretório **raiz** do projeto (`/var/www/html/Visao/restaura-foto-antiga`):
+
+```bash
+npm run tauri dev
+```
+
+> **O que esse comando faz nos bastidores:**
+> 1. Inicia o servidor Vite para a interface web reativa (`localhost:1420`).
+> 2. Compila a casca nativa em Rust (`src-tauri`).
+> 3. Conecta o interpretador Python embutido com OpenCV e NumPy via PyO3 a partir do `.venv`.
+> 4. Abre a janela desktop nativa do **RestauraFoto** no seu ambiente gráfico.
+
+*(Caso seu terminal informe `npm: comando não encontrado`, certifique-se de que o NVM está carregado: `source ~/.bashrc`)*.
+
+---
+
+### ⚙️ 2. Executar o Binário que Você Acabou de Compilar
+
+Como você já executou com sucesso o `cargo build` dentro da pasta `src-tauri`, o binário compilado já existe em `src-tauri/target/debug/tauri-app`. 
+
+Para executá-lo diretamente:
+
+1. Em um terminal, inicie o servidor web da interface:
+   ```bash
+   npm run dev
+   ```
+2. Em outro terminal, lance a janela desktop compilada:
+   ```bash
+   ./src-tauri/target/debug/tauri-app
+   ```
+
+*(Nota: O erro que ocorreu anteriormente com `cargo build` na raiz aconteceu porque o `Cargo.toml` reside na pasta [src-tauri/Cargo.toml](file:///var/www/html/Visao/restaura-foto-antiga/src-tauri/Cargo.toml). Usando `npm run tauri dev` na raiz, o Tauri encontra o caminho automaticamente).*
+
+---
+
+### 🐍 3. Executar Apenas o Motor Python (Modo CLI / Testes da Disciplina)
+
+Se você quiser testar as técnicas de visão computacional da FATEC diretamente sobre as fotos do [acervo-fotografico](file:///var/www/html/Visao/restaura-foto-antiga/acervo-fotografico) sem abrir a janela gráfica:
+
+```bash
+.venv/bin/python src-tauri/restaurar.py acervo-fotografico/acv_imgcapa_1434168951.jpg /tmp/resultado.png
+```
+
+---
+
+### 🧪 4. Validar a Saúde Geral (Malha Fechada Tripla)
+
+Para testar todas as 3 camadas (Rust, OpenCV e TypeScript) em 4 segundos antes de rodar o app:
+
+```bash
+npm test
+```

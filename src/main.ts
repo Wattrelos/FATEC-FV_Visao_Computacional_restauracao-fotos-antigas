@@ -88,6 +88,10 @@ let histRestaurada: CanaisHistograma | null = null;
 let debounceTimeout: number | undefined;
 
 // Elementos da UI
+let btnCreditos: HTMLButtonElement;
+let modalCreditos: HTMLElement;
+let btnFecharCreditos: HTMLButtonElement;
+let btnOkCreditos: HTMLButtonElement;
 let btnAbrir: HTMLButtonElement;
 let btnSalvar: HTMLButtonElement;
 let btnReset: HTMLButtonElement;
@@ -205,6 +209,10 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 function vincularElementos() {
+  btnCreditos = document.querySelector("#btn-creditos")!;
+  modalCreditos = document.querySelector("#modal-creditos")!;
+  btnFecharCreditos = document.querySelector("#btn-fechar-creditos")!;
+  btnOkCreditos = document.querySelector("#btn-ok-creditos")!;
   btnAbrir = document.querySelector("#btn-abrir")!;
   btnSalvar = document.querySelector("#btn-salvar")!;
   btnReset = document.querySelector("#btn-reset")!;
@@ -709,6 +717,13 @@ function desenharLinhaHistograma(
 // Eventos Gerais (Atalhos, Dropzone, Reset)
 // ----------------------------------------------------------------------------
 function configurarEventosGerais() {
+  btnCreditos?.addEventListener("click", abrirModalCreditos);
+  btnFecharCreditos?.addEventListener("click", fecharModalCreditos);
+  btnOkCreditos?.addEventListener("click", fecharModalCreditos);
+  modalCreditos?.addEventListener("click", (e) => {
+    if (e.target === modalCreditos) fecharModalCreditos();
+  });
+
   btnAbrir.addEventListener("click", escolherEAbrirFoto);
   dropzone.addEventListener("click", escolherEAbrirFoto);
   btnSalvar.addEventListener("click", salvarCopiaRestaurada);
@@ -722,6 +737,10 @@ function configurarEventosGerais() {
 
   // Atalhos de teclado
   window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalCreditos && !modalCreditos.hidden) {
+      fecharModalCreditos();
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
       e.preventDefault();
       escolherEAbrirFoto();
@@ -749,6 +768,17 @@ function configurarEventosGerais() {
   window.addEventListener("resize", () => {
     atualizarIndicadorAba();
   });
+}
+
+
+function abrirModalCreditos() {
+  if (!modalCreditos) return;
+  modalCreditos.hidden = false;
+}
+
+function fecharModalCreditos() {
+  if (!modalCreditos) return;
+  modalCreditos.hidden = true;
 }
 
 function mostrarLoader(visivel: boolean, texto = "", suave = false) {

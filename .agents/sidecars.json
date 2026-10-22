@@ -1,0 +1,29 @@
+{
+    "sidecars": {
+        "local-vision-coder": {
+            "name": "Local Vision & Code Assistant",
+            "description": "Subagente local de alta velocidade para tarefas de algoritmos OpenCV, testes e ajustes na casca Tauri.",
+            "provider": "openai_compatible",
+            "config": {
+                "base_url": "http://127.0.0.1:11434/v1",
+                "model": "qwen2.5-coder:7b",
+                "api_key": "ollama",
+                "temperature": 0.2,
+                "max_context_tokens": 8192
+            },
+            "capabilities": {
+                "code_modification": true,
+                "terminal_execution": true,
+                "allowed_tools": [
+                    "run_command",
+                    "replace_file_content",
+                    "view_file"
+                ]
+            },
+            "policies": {
+                "fallback_to_cloud_on_failure": true,
+                "max_retries": 3
+            }
+        }
+    }
+}
